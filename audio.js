@@ -1,6 +1,20 @@
 let audioCtx = null, osc1 = null, osc2 = null, turboOsc = null, gearOsc = null;
 let engineGain = null, turboGain = null, gearGain = null, filter = null;
 
+function haptic(pattern) {
+  if (state.hapticsOn && navigator.vibrate) {
+    try { navigator.vibrate(pattern); } catch (e) {}
+  }
+}
+
+function toggleHaptics() {
+  state.hapticsOn = !state.hapticsOn;
+  const btn = document.getElementById('haptic-btn');
+  btn.innerText = state.hapticsOn ? 'WIBRACJE: ON' : 'WIBRACJE: OFF';
+  btn.classList.toggle('on', state.hapticsOn);
+  if (state.hapticsOn) haptic(25);
+}
+
 function toggleAudio() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -37,10 +51,12 @@ function toggleAudio() {
 
     osc1.start(); osc2.start(); turboOsc.start(); gearOsc.start();
   }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   state.audioOn = !state.audioOn;
   const btn = document.getElementById('audio-btn');
   btn.innerText = state.audioOn ? 'AUDIO: ON' : 'AUDIO: OFF';
   btn.classList.toggle('on', state.audioOn);
+  haptic(15);
   if (!state.audioOn && engineGain) {
     engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
     turboGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
@@ -49,6 +65,7 @@ function toggleAudio() {
 }
 
 function triggerBlowOffValve() {
+  haptic(18);
   if (!state.audioOn || !audioCtx) return;
   const bufSize = audioCtx.sampleRate * 0.22;
   const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
@@ -69,6 +86,7 @@ function triggerBlowOffValve() {
 }
 
 function triggerExhaustPop() {
+  haptic([12, 20, 12]);
   if (!state.audioOn || !audioCtx) return;
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();
@@ -82,6 +100,7 @@ function triggerExhaustPop() {
 }
 
 function triggerTorqueClick(success) {
+  haptic(success ? [30, 30, 60] : 40);
   if (!state.audioOn || !audioCtx) return;
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();

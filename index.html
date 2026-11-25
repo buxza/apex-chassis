@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#05070a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>APEX CHASSIS // MOBILE CAD GARAGE & SIM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<header>
+  <div class="brand-row">
+    <div class="brand">
+      <span class="lvl-badge" id="hdr-lvl">LVL 1 • ROOKIE</span>
+      <div class="brand-title">APEX CHASSIS</div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="haptic-btn" onclick="toggleHaptics()">WIBRACJE: ON</button>
+      <button class="icon-btn" id="audio-btn" onclick="toggleAudio()">AUDIO: OFF</button>
+    </div>
+  </div>
+
+  <div class="econ-bar">
+    <div class="chip cash"><span class="lbl">KASA</span><span class="val" id="hdr-cash">$3,500</span></div>
+    <div class="chip rep"><span class="lbl">RP</span><span class="val" id="hdr-rep">0</span></div>
+    <div class="chip"><span class="lbl">MOC</span><span class="val" id="hdr-hp">145 KM</span></div>
+    <div class="chip" id="hdr-wear-chip"><span class="lbl">STAN</span><span class="val" id="hdr-wear">100%</span></div>
+  </div>
+</header>
+
+<main>
+  <!-- 1. INTERACTIVE 3D GARAGE (MOBILE SPLIT + BOTTOM SHEET) -->
+  <div id="view-garage" class="view active">
+    <div class="viewport garage-viewport">
+      <div class="viewport-top-hud">
+        <div class="hud-card compact">
+          <b style="color:var(--orange);">PODNOŚNIK CAD 3D</b>
+          <div class="hud-sub" id="garage-summary">960 kg • 151 KM/t • 1.1 bar</div>
+        </div>
+        <button class="hud-action-btn" id="btn-explode" onclick="toggleExploded()">ROZSTRZELONY: ON</button>
+      </div>
+
+      <!-- INTERACTIVE TORQUE WRENCH MINI-GAME (THUMB OPTIMIZED) -->
+      <div id="install-minigame">
+        <div class="mg-tag">KLUCZ DYNAMOMETRYCZNY // DOKRĘĆ ŚRUBY</div>
+        <div id="mg-part-name" class="mg-title">Podzespół</div>
+        <p class="mg-desc">Stuknij w zielone pole, aby zdobyć <b>+5% bonusu precyzji</b>!</p>
+        <div class="torque-bar" ontouchstart="confirmTorqueInstall(event)" onclick="confirmTorqueInstall(event)">
+          <div class="torque-sweet"></div>
+          <div class="torque-needle" id="mg-needle"></div>
+        </div>
+        <button class="btn-main big-thumb" onclick="confirmTorqueInstall()">DOKRĘĆ TERAZ</button>
+      </div>
+
+      <!-- MOBILE QUICK ACTION BAR ABOVE SHEET -->
+      <div class="cad-toolbar">
+        <button class="cad-pill-btn rev-btn" id="btn-rev"
+          ontouchstart="startGarageRev(event)" ontouchend="stopGarageRev(event)" ontouchcancel="stopGarageRev(event)"
+          onmousedown="startGarageRev()" onmouseup="stopGarageRev()">🔥 GAZUJ</button>
+        <button class="cad-pill-btn" onclick="toggleHeadlights()">💡 ŚWIATŁA</button>
+        <div class="swatch-group">
+          <div class="color-swatch" style="background:#ff5500;" onclick="setCarColor('#ff5500')"></div>
+          <div class="color-swatch" style="background:#00e5ff;" onclick="setCarColor('#00e5ff')"></div>
+          <div class="color-swatch" style="background:#d500f9;" onclick="setCarColor('#d500f9')"></div>
+          <div class="color-swatch" style="background:#00e676;" onclick="setCarColor('#00e676')"></div>
+          <div class="color-swatch" style="background:#ffbe0b;" onclick="setCarColor('#ffbe0b')"></div>
+          <div class="color-swatch" style="background:#e2e8f0;" onclick="setCarColor('#e2e8f0')"></div>
+        </div>
+      </div>
+
+      <canvas id="garageCanvas"></canvas>
+    </div>
+
+    <!-- BOTTOM DRAWER / SIDEBAR -->
+    <div class="sidebar" id="garage-drawer">
+      <div class="drawer-handle" onclick="toggleDrawerSize()">
+        <div class="handle-bar"></div>
+        <span id="drawer-hint">DOTKNIJ CZĘŚĆ NA AUCIE 3D LUB WYBIERZ KATEGORIĘ</span>
+      </div>
+
+      <div class="cat-pills" id="garage-cat-pills">
+        <button class="cat-pill active" data-cat="all" onclick="selectGarageCat('all')">WSZYSTKO</button>
+        <button class="cat-pill" data-cat="engine" onclick="selectGarageCat('engine')">1. SILNIK</button>
+        <button class="cat-pill" data-cat="internals" onclick="selectGarageCat('internals')">2. KUCIZNA</button>
+        <button class="cat-pill" data-cat="induction" onclick="selectGarageCat('induction')">3. TURBO</button>
+        <button class="cat-pill" data-cat="exhaust" onclick="selectGarageCat('exhaust')">4. WYDECH</button>
+        <button class="cat-pill" data-cat="drivetrain" onclick="selectGarageCat('drivetrain')">5. SKRZYNIA</button>
+        <button class="cat-pill" data-cat="suspension" onclick="selectGarageCat('suspension')">6. ZAWIAS</button>
+        <button class="cat-pill" data-cat="brakes" onclick="selectGarageCat('brakes')">7. HAMULCE</button>
+        <button class="cat-pill" data-cat="tires" onclick="selectGarageCat('tires')">8. OPONY</button>
+        <button class="cat-pill" data-cat="aero" onclick="selectGarageCat('aero')">9. AERO</button>
+      </div>
+
+      <div id="garage-sections-container" class="sections-list"></div>
+
+      <div class="box">
+        <div class="box-hdr"><span>Serwis & Regeneracja</span><span id="garage-hp-lbl">100%</span></div>
+        <div class="grid-2">
+          <button class="btn-main" onclick="repairCar()">REMONT ($350)</button>
+          <button class="btn-alt" onclick="sponsorBailout()">SPONSOR ($0)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. DYNO & ECU -->
+  <div id="view-dyno" class="view">
+    <div class="viewport dyno-viewport">
+      <div class="viewport-top-hud">
+        <div class="hud-card compact">
+          <b id="dyno-peak" style="color:var(--gold);">SZCZYT: 145 KM</b>
+          <div class="hud-sub" id="dyno-sub">210 Nm • EGT: 720°C</div>
+        </div>
+        <button class="hud-action-btn orange" onclick="runDynoPull()">▶ POMIAR DYNO</button>
+      </div>
+      <canvas id="dynoCanvas"></canvas>
+    </div>
+
+    <div class="sidebar">
+      <div class="box" id="crew-panel" style="border-color:var(--cyan);">
+        <div class="box-hdr"><span style="color:var(--cyan);">AI CREW CHIEF</span><span id="crew-status">OK</span></div>
+        <div id="crew-advice" style="font-size:11.5px; line-height:1.35;">Przesuwaj suwaki palcem — wykres mocy na górze reaguje na żywo.</div>
+      </div>
+
+      <div class="box">
+        <div class="box-hdr"><span>Szybkie Mapy Inżyniera</span><span>PRESETS</span></div>
+        <div class="grid-2">
+          <button class="btn-alt" onclick="applyPreset('drag')">1/4 Mili (Drag)</button>
+          <button class="btn-alt" onclick="applyPreset('drift')">Touge Drift</button>
+          <button class="btn-alt" onclick="applyPreset('rally')">Szuter (Rally)</button>
+          <button class="btn-alt" onclick="applyPreset('circuit')">Time Attack</button>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="box-hdr"><span>Kalibracja ECU & Geometria</span><span>LIVE</span></div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Mieszanka Paliwa (AFR)</span><b id="v-afr">12.8 : 1</b></div>
+          <input type="range" id="s-afr" min="11.0" max="15.2" step="0.1" value="12.8" oninput="updateTune()">
+        </div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Ciśnienie Doładowania (Boost)</span><b id="v-boost">1.0 bar</b></div>
+          <input type="range" id="s-boost" min="0.4" max="2.8" step="0.1" value="1.0" oninput="updateTune()">
+        </div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Wyprzedzenie Zapłonu (Ignition)</span><b id="v-ign">+18°</b></div>
+          <input type="range" id="s-ign" min="8" max="34" step="1" value="18" oninput="updateTune()">
+        </div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Limit Obrotów (Rev Limiter)</span><b id="v-revlim">8200 RPM</b></div>
+          <input type="range" id="s-revlim" min="6800" max="10200" step="200" value="8200" oninput="updateTune()">
+        </div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Przełożenie Główne (Final Drive)</span><b id="v-gear">1.00x</b></div>
+          <input type="range" id="s-gear" min="0.70" max="1.45" step="0.05" value="1.00" oninput="updateTune()">
+        </div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Sztywność Sprężyn</span><b id="v-susp">50%</b></div>
+          <input type="range" id="s-susp" min="10" max="100" step="5" value="50" oninput="updateTune()">
+        </div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Kąt Pochylenia Kół (Camber)</span><b id="v-camber">-1.5°</b></div>
+          <input type="range" id="s-camber" min="-4.5" max="0.0" step="0.2" value="-1.5" oninput="updateTune()">
+        </div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Docisk Aero (Skrzydło)</span><b id="v-aero">40%</b></div>
+          <input type="range" id="s-aero" min="0" max="100" step="5" value="40" oninput="updateTune()">
+        </div>
+        <div class="slider-grp">
+          <div class="slider-top"><span>Wtrysk NITRO</span><b id="v-nos">+75 KM</b></div>
+          <input type="range" id="s-nos" min="30" max="220" step="10" value="75" oninput="updateTune()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. LICENSES & PINK SLIPS -->
+  <div id="view-events" class="view">
+    <div class="multi-grid" id="events-container"></div>
+  </div>
+
+  <!-- 4. BLACK MARKET & BOSSES -->
+  <div id="view-market" class="view">
+    <div class="multi-grid">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="box" style="border-color:var(--purple);">
+          <div class="box-hdr"><span style="color:var(--purple);">CZARNY RYNEK // PROTOTYPY</span><span>LOOT</span></div>
+          <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">
+            Otwieraj skrzynie z prototypami (4-Rotor Billet 26B, HKS Twin-Turbo 80s, Tytanowy Wydech, Aktywne Aero DRS).
+          </p>
+          <button class="btn-main big-thumb" style="background:linear-gradient(90deg, #9c27b0, #d500f9); color:#fff;" onclick="openMysteryCrate(1200)">
+            OTWÓRZ KONTRABANDĘ ($1,200)
+          </button>
+          <div id="crate-result" style="margin-top:8px; font-size:12px; color:var(--cyan); font-weight:700;"></div>
+        </div>
+        <div class="box">
+          <div class="box-hdr"><span>ZDOBYTE PROTOTYPY</span><span id="proto-count">0 szt.</span></div>
+          <div id="proto-inventory" class="grid-2">
+            <div style="font-size:11.5px; color:var(--muted); grid-column:span 2;">Brak prototypów. Otwórz skrzynię lub wygraj Pink Slips!</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;" id="bosses-list"></div>
+    </div>
+  </div>
+
+  <!-- 5. TRACK & MOBILE TELEMETRY -->
+  <div id="view-track" class="view">
+    <div class="viewport track-viewport">
+      <div class="disc-bar">
+        <button class="disc-btn active" id="d-drag" onclick="setDiscipline('drag')">1. Drag 1/4</button>
+        <button class="disc-btn" id="d-drift" onclick="setDiscipline('drift')">2. Drift</button>
+        <button class="disc-btn" id="d-rally" onclick="setDiscipline('rally')">3. Szuter</button>
+        <button class="disc-btn" id="d-circuit" onclick="setDiscipline('circuit')">4. Tor GP</button>
+      </div>
+
+      <div class="race-hud-top">
+        <div class="hud-card compact">
+          <b style="color:var(--orange);" id="track-title">STREET DRAG 402M</b>
+          <div class="hud-sub" id="race-goal-hud">CEL: 12.40s</div>
+        </div>
+        <div class="hud-card compact" style="text-align:right;">
+          <b id="race-timer-hud" style="color:var(--gold); font-family:'JetBrains Mono',monospace;">0.00s</b>
+          <div class="hud-sub" id="race-dist-hud">0 / 402m</div>
+        </div>
+      </div>
+
+      <!-- COMPACT TELEMETRY PILL FOR PHONE -->
+      <div class="physics-telemetry">
+        <canvas id="gforceCanvas" width="44" height="44" style="width:44px; height:44px; background:#090d14; border-radius:50%; border:1px solid rgba(255,255,255,0.18);"></canvas>
+        <div class="tire-grid">
+          <div class="tire-cell" id="t-fl"><b>48°</b></div>
+          <div class="tire-cell" id="t-fr"><b>48°</b></div>
+          <div class="tire-cell" id="t-rl"><b>48°</b></div>
+          <div class="tire-cell" id="t-rr"><b>48°</b></div>
+        </div>
+      </div>
+
+      <!-- DIGITAL CLUSTER -->
+      <div class="cluster">
+        <div>
+          <div class="leds" id="rpm-leds"></div>
+          <div class="cl-meta">
+            <span id="cl-rpm">1000 RPM</span>
+            <span id="cl-boost">0.0 BAR</span>
+          </div>
+        </div>
+        <div class="gear-box">
+          <b id="cl-gear">1</b>
+          <span>GEAR</span>
+        </div>
+        <div class="speed-box">
+          <b id="cl-speed">0</b>
+          <span>KM/H</span>
+        </div>
+        <div class="nos-bar-wrap">
+          <div class="nos-lbl"><span>NOS</span><span id="cl-nos-pct">100%</span></div>
+          <div class="nos-track"><div class="nos-fill" id="cl-nos-bar"></div></div>
+          <div class="oil-lbl">OIL <b id="cl-oil">90°</b></div>
+        </div>
+      </div>
+
+      <!-- ERGONOMIC DUAL-THUMB MOBILE CONTROLS -->
+      <div class="touch-pad">
+        <!-- Left Thumb: Smooth Touch Steering Slider / Dual Pad -->
+        <div class="steer-zone" id="steer-zone">
+          <button class="t-btn steer" id="t-left">◀</button>
+          <button class="t-btn steer" id="t-right">▶</button>
+        </div>
+
+        <!-- Center Utility -->
+        <button class="t-btn reset-pill" onclick="resetRace()">↺ RESET</button>
+
+        <!-- Right Thumb: Arc Layout (NOS, Handbrake, Brake, Gas) -->
+        <div class="pedal-zone">
+          <div class="aux-pedals">
+            <button class="t-btn nos" id="t-nos">NOS</button>
+            <button class="t-btn hb" id="t-hb">RĘCZNY</button>
+          </div>
+          <div class="main-pedals">
+            <button class="t-btn brake" id="t-brake">HAM</button>
+            <button class="t-btn gas" id="t-gas">GAZ</button>
+          </div>
+        </div>
+      </div>
+
+      <canvas id="trackCanvas"></canvas>
+    </div>
+  </div>
+</main>
+
+<!-- BOTTOM TAB BAR (NATIVE APP FEEL ON PHONE) -->
+<nav class="bottom-nav">
+  <button class="bnav-btn active" id="tab-garage" onclick="switchView('garage')">
+    <span class="ico">🔧</span><span>GARAŻ 3D</span>
+  </button>
+  <button class="bnav-btn" id="tab-dyno" onclick="switchView('dyno')">
+    <span class="ico">📈</span><span>HAMOWNIA</span>
+  </button>
+  <button class="bnav-btn" id="tab-events" onclick="switchView('events')">
+    <span class="ico">🏆</span><span>ZAWODY</span>
+  </button>
+  <button class="bnav-btn" id="tab-market" onclick="switchView('market')">
+    <span class="ico">💎</span><span>RYNEK</span>
+  </button>
+  <button class="bnav-btn race-tab" id="tab-track" onclick="switchView('track')">
+    <span class="ico">🏁</span><span>TOR</span>
+  </button>
+</nav>
+
+<script src="catalog.js"></script>
+<script src="audio.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>

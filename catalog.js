@@ -1,13 +1,13 @@
 const GARAGE_CATEGORIES = [
   { key: 'engine', label: '1. Blok Silnika (Engine Swap)', tag: 'BLOCK' },
-  { key: 'internals', label: '2. Wnętrze Silnika (Kucizna & Wałki)', tag: 'INTERNALS' },
+  { key: 'internals', label: '2. Wnętrze Silnika (Kucizna)', tag: 'INTERNALS' },
   { key: 'induction', label: '3. Doładowanie & Dolot', tag: 'BOOST' },
-  { key: 'exhaust', label: '4. Układ Wydechowy & Kolektor', tag: 'EXHAUST' },
-  { key: 'drivetrain', label: '5. Skrzynia Biegów & Dyferencjał', tag: 'TRANS' },
+  { key: 'exhaust', label: '4. Układ Wydechowy', tag: 'EXHAUST' },
+  { key: 'drivetrain', label: '5. Skrzynia & Dyferencjał', tag: 'TRANS' },
   { key: 'suspension', label: '6. Zawieszenie & Wahacze', tag: 'COILOVERS' },
   { key: 'brakes', label: '7. Układ Hamulcowy', tag: 'ROTORS' },
   { key: 'tires', label: '8. Opony & Kute Felgi', tag: 'COMPOUND' },
-  { key: 'aero', label: '9. Aerodynamika & Nadwozie', tag: 'AERO' }
+  { key: 'aero', label: '9. Aerodynamika & Body', tag: 'AERO' }
 ];
 
 const DB = {
@@ -36,10 +36,10 @@ const DB = {
     { id: 'ex_titanium', name: 'Tytanowy Układ Wydechowy', spec: '+13% mocy • -14 kg masy', hpMult: 1.13, spoolBonus: 0.18, pops: true, weightSave: 14, price: 3400, color: '#d500f9' }
   ],
   drivetrain: [
-    { id: 'tr_street', name: '5-Biegowa Manual + Szpera 1.5', spec: 'RWD • Klasyczna zmiana', grip: 1.04, drift: 1.0, awd: false, straightCut: false, shiftTime: 0.18, price: 0 },
-    { id: 'tr_drift', name: 'Spaw 100% + Krótkie Przełożenia', spec: 'RWD • Idealny do driftu', grip: 0.94, drift: 1.85, awd: false, straightCut: false, shiftTime: 0.14, price: 1350 },
-    { id: 'tr_rally_awd', name: 'Napęd AWD + Kłowa Skrzynia', spec: '4x4 • Gwizd kłów • Szuter', grip: 1.22, drift: 0.90, awd: true, straightCut: true, shiftTime: 0.06, price: 2400 },
-    { id: 'tr_seq_drag', name: 'Sekwencja 6-Biegów + Półosie Pro', spec: '0.02s zmiana biegu • Drag', grip: 1.38, drift: 0.55, awd: false, straightCut: true, shiftTime: 0.02, price: 3200 }
+    { id: 'tr_street', name: '5-Biegowa Manual + Szpera 1.5', spec: 'RWD • Klasyczna zmiana', grip: 1.04, drift: 1.0, awd: false, straightCut: false, price: 0 },
+    { id: 'tr_drift', name: 'Spaw 100% + Krótkie Przełożenia', spec: 'RWD • Idealny do driftu', grip: 0.94, drift: 1.85, awd: false, straightCut: false, price: 1350 },
+    { id: 'tr_rally_awd', name: 'Napęd AWD + Kłowa Skrzynia', spec: '4x4 • Gwizd kłów • Szuter', grip: 1.22, drift: 0.90, awd: true, straightCut: true, price: 2400 },
+    { id: 'tr_seq_drag', name: 'Sekwencja 6-Biegów + Półosie Pro', spec: '0.02s zmiana biegu • Drag', grip: 1.38, drift: 0.55, awd: false, straightCut: true, price: 3200 }
   ],
   suspension: [
     { id: 'su_stock', name: 'Amortyzatory Seryjne', spec: 'Komfort • Duże przechyły', cornerMult: 1.00, offroad: 0.65, price: 0 },

@@ -1,11 +1,13 @@
-# APEX CHASSIS // Interactive CAD Garage & Pacejka Sim
+# APEX CHASSIS // Mobile-First CAD Garage & Sim
 
-## Struktura projektu
-- `index.html` – Główny interfejs użytkownika (Garaż 3D, Hamownia ECU, Zawody, Czarny Rynek, Tor).
-- `style.css` – Stylizacja motorsport / ciemny kokpit telemetryczny.
-- `catalog.js` – Baza 9 kategorii części, prototypów z czarnego rynku, licencji oraz bossów syndykatu.
-- `audio.js` – Proceduralny syntezator dźwięku silnika, zaworu BOV, kłowej skrzyni i strzałów z wydechu (Web Audio API).
-- `engine.js` – Interaktywny podnośnik 3D CAD z klikanymi podzespołami, klucz dynamometryczny, hamownia i fizyka jazdy Pacejka.
-
-## Jak uruchomić?
-Wypakuj archiwum ZIP do dowolnego folderu i otwórz plik `index.html` w przeglądarce (lub przez Live Server w VS Code).
+## Ulepszenia Mobile UX (Ocena 6/6):
+- **Natywny Dolny Pasek Nawigacji (Bottom Tab Bar)** z obsługą `env(safe-area-inset-bottom)` dla iPhone/Android (bez zasłaniania przez pasek gestów).
+- **Gesty 3D w Garażu**:
+  - Obracanie auta 1 palcem,
+  - Przybliżanie/oddalanie (Pinch-to-Zoom) 2 palcami,
+  - Powiększone pulsujące punkty dotyku (36px hit-radius) na silniku, turbinie, kołach, wydechu i aero,
+  - Rozwijana szuflada części (Bottom Sheet) + poziome pigułki kategorii.
+- **Ergonomiczny Kokpit Wyścigowy pod Dwa Kciuki**:
+  - Lewy kciuk: szerokie przyciski skrętu `◀` / `▶`,
+  - Prawy kciuk: układ łukowy (duży pedał `GAZ`, `HAM`, `RĘCZNY`, `NOS`).
+- **Haptyka (Vibration API)**: wibracje przy zmianie biegów, BOV, dokręceniu śruby kluczem dynamometrycznym, strzałach z wydechu i kolizjach.
